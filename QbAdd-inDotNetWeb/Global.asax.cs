@@ -22,15 +22,5 @@ namespace QbAdd_inDotNetWeb
             
         }
 
-        protected void Session_Start()
-        {
-
-        }
-
-        protected void Application_PostAcquireRequestState()
-        {
-
-        }
-
     }
 }

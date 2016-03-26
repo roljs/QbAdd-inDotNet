@@ -1,9 +1,9 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <!--Created:ce44715c-8c4e-446b-879c-ea9ebe0f09c8-->
-<OfficeApp 
-          xmlns="http://schemas.microsoft.com/office/appforoffice/1.1" 
-          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-          xmlns:bt="http://schemas.microsoft.com/office/officeappbasictypes/1.0" 
+<OfficeApp
+          xmlns="http://schemas.microsoft.com/office/appforoffice/1.1"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xmlns:bt="http://schemas.microsoft.com/office/officeappbasictypes/1.0"
           xmlns:ov="http://schemas.microsoft.com/office/taskpaneappversionoverrides"
           xsi:type="TaskPaneApp">
 
@@ -27,13 +27,13 @@
     <AppDomain>https://appcenter.intuit.com/</AppDomain>
   </AppDomains>
   <!--End Basic Settings. -->
-  
+
   <!--Begin TaskPane Mode integration. This section is used if there are no VersionOverrides or if the Office client version does not support add-in commands. -->
   <Hosts>
     <Host Name="Workbook" />
   </Hosts>
   <DefaultSettings>
-    <SourceLocation DefaultValue="~remoteAppUrl/Home.aspx" />
+    <SourceLocation DefaultValue="~remoteAppUrl/Home.html" />
   </DefaultSettings>
   <!-- End TaskPane Mode integration.  -->
 
@@ -41,7 +41,7 @@
 
   <!-- Begin Add-in Commands Mode integration. -->
   <VersionOverrides xmlns="http://schemas.microsoft.com/office/taskpaneappversionoverrides" xsi:type="VersionOverridesV1_0">
-    
+
     <!-- The Hosts node is required. -->
     <Hosts>
       <!-- Each host can have a different set of commands. -->
@@ -106,10 +106,46 @@
               </Group>
             </OfficeTab>
           </ExtensionPoint>
+
+          <ExtensionPoint xsi:type="ContextMenu">
+            <OfficeMenu id="ContextMenuCell">
+              <Control xsi:type="Menu" id="TestMenu2">
+              <Label resid="Contoso.ContextMenu.Label" />
+              <!--<Tooltip resid="residToolTip" />-->
+              <Supertip>
+                <Title resid="Contoso.ContextMenu.Label" />
+                <Description resid="Contoso.GetStarted.Description" />
+              </Supertip>
+                <Icon>
+                  <bt:Image size="16" resid="Contoso.tpicon_16x16" />
+                  <bt:Image size="32" resid="Contoso.tpicon_32x32" />
+                  <bt:Image size="80" resid="Contoso.tpicon_80x80" />
+                </Icon>
+              <Items>
+                <Item id="showGallery2">
+                  <Label resid="Contoso.ContextMenu.Label"/>
+                  <Supertip>
+                    <Title resid="Contoso.ContextMenu.Label" />
+                    <Description resid="Contoso.TaskpaneButton.Tooltip" />
+                  </Supertip>
+                  <Icon>
+                    <bt:Image size="16" resid="Contoso.tpicon_16x16" />
+                    <bt:Image size="32" resid="Contoso.tpicon_32x32" />
+                    <bt:Image size="80" resid="Contoso.tpicon_80x80" />
+                  </Icon>
+                  <Action xsi:type="ExecuteFunction">
+                    <FunctionName>addDonation</FunctionName>
+                  </Action>
+                </Item>
+              </Items>
+              </Control>
+            </OfficeMenu>
+          </ExtensionPoint>
+          
         </DesktopFormFactor>
       </Host>
     </Hosts>
-    
+
     <!-- You can use resources across hosts and form factors. -->
     <Resources>
       <bt:Images>
@@ -119,12 +155,13 @@
       </bt:Images>
       <bt:Urls>
         <bt:Url id="Contoso.DesktopFunctionFile.Url" DefaultValue="~remoteAppUrl/Functions/FunctionFile.html" />
-        <bt:Url id="Contoso.Taskpane.Url" DefaultValue="~remoteAppUrl/Home.aspx" />
+        <bt:Url id="Contoso.Taskpane.Url" DefaultValue="~remoteAppUrl/Home.html" />
         <bt:Url id="Contoso.GetStarted.LearnMoreUrl" DefaultValue="https://go.microsoft.com/fwlink/?LinkId=276812" />
       </bt:Urls>
       <!-- ShortStrings max characters==125. -->
       <bt:ShortStrings>
         <bt:String id="Contoso.TaskpaneButton.Label" DefaultValue="Show Taskpane" />
+        <bt:String id="Contoso.ContextMenu.Label" DefaultValue="Add Donation" />
         <bt:String id="Contoso.Group1Label" DefaultValue="Commands Group" />
         <bt:String id="Contoso.GetStarted.Title" DefaultValue="Get started with your sample add-in!" />
       </bt:ShortStrings>

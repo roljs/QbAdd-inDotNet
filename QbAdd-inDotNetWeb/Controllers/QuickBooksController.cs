@@ -25,7 +25,7 @@ namespace QbAdd_inDotNetWeb
             public string secret;
         }
 
-        private String realmId, accessToken, accessTokenSecret, consumerKey, consumerSecret, dataSourcetype;
+        private String realmId, accessToken, accessTokenSecret, consumerKey, consumerSecret;
 
         [HttpGet]
         public IEnumerable<Purchase> GetPurchases(int n)
