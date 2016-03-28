@@ -3,30 +3,48 @@
 (function () {
     "use strict";
 
-    var _accessToken = {};
-    var _dlg;
+    var accessToken = {};
+    var dlg;
+    var messageBanner = null;
 
     Office.initialize = function (reason) {
         $(document).ready(function () {
 
-            $('#btnGetPurchases').click(getPurchases);
+            $('#btnSignIn').click(signIn);
+            $('#btnSignOut').click(signOut);
+
+            $('#btnGetExpenses').click(getExpenses);
             //$('#btnGetAccounts').click(getAccounts);
             $('#btnCreateReport').click(createDonationsTracker);
-            $('#btnSignOut').click(signOut);
-            $('#btnSignIn').click(signIn);
+
             $("#welcomePanel").show();
             $("#actionsPanel").hide();
+
+            // Initialize the FabricUI notification mechanism and hide it
+            messageBanner = new fabric.MessageBanner($(".ms-MessageBanner")[0]);
+            messageBanner.hideBanner();
 
             checkSignIn();
         });
     };
 
+    function signIn() {
+        var signInUrl = "https://appcenter.intuit.com/Connect/SessionStart?datasources=quickbooks&grantUrl="
+            //+ encodeURIComponent("https://localhost:44300/OAuthManager.aspx?connect=true");
+            + encodeURIComponent("https://qbaddin.azurewebsites.net/OAuthManager.aspx?connect=true");
+        Office.context.ui.displayDialogAsync(signInUrl,
+            { height: 40, width: 40},
+            function (result) {
+                dlg = result.value;
+                dlg.addEventHandler("dialogMessageReceived", processMessage);
+            });
+    }
+
     function processMessage(arg) {
-        _dlg.close();
-        _accessToken = JSON.parse(arg.message);
+        dlg.close();
+        accessToken = JSON.parse(arg.message);
 
-
-        $.get("/api/setToken?t=" + _accessToken.token + "&s=" + _accessToken.secret)
+        $.get("/api/setToken?" + $.param(accessToken))
             .done(function (data) {
                 console.log(data);
             });
@@ -35,8 +53,16 @@
         $("#actionsPanel").show();
     }
 
+    function signOut() {
+        $.get("/api/clearToken", function (data, status) {
+            accessToken = null;
+            $("#welcomePanel").show();
+            $("#actionsPanel").hide();
+        });
+    }
+
     function checkSignIn() {
-        if (typeof _accessToken.token == "undefined") {
+        if (typeof accessToken.token == "undefined") {
             $.get("api/getToken", function (data, status) {
                 $("#welcomePanel").hide();
                 $("#actionsPanel").fadeIn("slow");
@@ -45,96 +71,62 @@
     }
 
 
-    function signIn() {
-        Office.context.ui.displayDialogAsync("https://appcenter.intuit.com/Connect/SessionStart?grantUrl=https%3A%2F%2Flocalhost%3A44300%2FOAuthManager.aspx%3Fconnect%3Dtrue&datasources=quickbooks",
-            { height: 40, width: 40, requireHTTPS: true },
-            function (result) {
-                _dlg = result.value;
-                _dlg.addEventHandler("dialogMessageReceived", processMessage);
-            });
-    }
-
-
-    function signOut() {
-        $.get("/api/clearToken", function (data, status) {
-            init();
-        });
-    }
-
-    function getPurchases() {
-        var url = "/api/getPurchases?n=100";
+    function getExpenses() {
+        var url = "/api/getExpenses?n=100";
 
         $.get(url, function (data, status) {
             var tableBody = getFormattedArray(data);
-            importTransactions(tableBody.data, tableBody.format);
-
+            addExpensesSheet(tableBody);
         });
-
     }
 
 
     // Import sample transactions into the workbook
-    function importTransactions(tableBodyData, tableBodyFormat) {
+    function addExpensesSheet(tableBody) {
 
         // Run a batch operation against the Excel object model
         Excel.run(function (ctx) {
 
-            // Unhide and start the spinner
-            //$(".ms-Spinner").show();
-            //spinnerComponent.start();
-
             // Add a new worksheet to store the transactions
-            var dataSheet = ctx.workbook.worksheets.add("Transactions");
+            var dataSheet = ctx.workbook.worksheets.add("Expenses");
 
-            // Create strings to store all the static content to display in the Welcome sheet
-            var sheetTitle = "WoodGrove Bank";
+           //Fill white color in the sheet for improved look
+            dataSheet.getRange("A2:M1000").format.fill.color = "white";
 
-            var sheetHeading1 = "Expense Transactions - Master List";
-
-            var sheetDesc1 = "This is the master list of your spending activity.";
-
-            var sheetDesc2 = "Filter transactions using the task pane to get insights.";
-
-            var sheetDesc3 = "Track donations and flag items that need follow up.";
-
-            var tableHeading = "Transactions";
-
-            // Add all the intro content to the Welcome sheet and format the text
-            addContentToWorksheet(dataSheet, "B1:E1", sheetTitle, "SheetTitle", "", "");
-
-            addContentToWorksheet(dataSheet, "B3:E3", sheetHeading1, "SheetHeading", "", "");
-
-            addContentToWorksheet(dataSheet, "C4:E4", sheetDesc1, "SheetHeadingDesc", "", "");
-
-            addContentToWorksheet(dataSheet, "C5:E5", sheetDesc2, "SheetHeadingDesc", "", "");
-
-            addContentToWorksheet(dataSheet, "C6:E6", sheetDesc3, "SheetHeadingDesc", "", "");
-
-            addContentToWorksheet(dataSheet, "B19:B19", tableHeading, "TableHeading", "", "");
-
-            //Fill white color in the sheet for improved look
-            dataSheet.getRange("A2:I2000").format.fill.color = "white";
+            //Add Sheet Title
+            var range = dataSheet.getRange("B1:E1");
+            range.values = "Contoso Expenses";
+            range.format.font.name = "Corbel";
+            range.format.font.size = 30;
+            range.format.font.color = "white";
+            range.merge();
+            //Fill color in the brand bar
+            dataSheet.getRange("A1:M1").format.fill.color = "#41AEBD";
 
             // Queue a command to add a new table
-            var startRowNumber = 20;
-            var masterTableAddress = 'Transactions!B20:G' + (startRowNumber + tableBodyData.length).toString();
+            var startRowNumber = 2;
+            var masterTableAddress = 'Expenses!B' + startRowNumber + ':G' + (startRowNumber + tableBody.data.length).toString();
             var masterTable = ctx.workbook.tables.add(masterTableAddress, true);
-            masterTable.name = "TransactionsTable";
+            masterTable.name = "ExpensesTable";
 
             // Queue a command to get the newly added table
             masterTable.getHeaderRowRange().values = [["DATE", "AMOUNT", "MERCHANT", "CATEGORY", "TYPEOFDAY", "MONTH"]];
 
-            masterTable.getDataBodyRange().formulas = tableBodyData;
-            //masterTable.getDataBodyRange().numberFormat = tableBodyFormat;
-            //masterTable.getDataBodyRange().format.autofitColumns();
+            masterTable.getDataBodyRange().formulas = tableBody.data;
+            masterTable.getDataBodyRange().numberFormat = tableBody.format;
 
             // Format the table header and data rows
-            addContentToWorksheet(dataSheet, "B20:G20", "", "TableHeaderRow", "", "");
+            range = dataSheet.getRange('Expenses!B' + startRowNumber + ':G' + startRowNumber);
+            range.format.font.name = "Corbel";
+            range.format.font.size = 10;
+            range.format.font.bold = true;
+            range.format.font.color = "black";
 
-            addContentToWorksheet(dataSheet, "B21:G" + (startRowNumber + tableBodyData.length).toString(), "", "TableDataRows", "", "");
-
-            // Set the number format of the Amount column
-            masterTable.columns.getItem("AMOUNT").numberFormat = "$#,##0.00"; //'_($* #,##0.00_);_($* (#,##0.00);_($* "-"??_);_(@_)';
+            range = dataSheet.getRange(masterTableAddress);
+            range.format.font.name = "Corbel";
+            range.format.font.size = 10;
+            range.format.borders.getItem('EdgeBottom').style = 'Continuous';
+            range.format.borders.getItem('EdgeTop').style = 'Continuous';
 
             // Sort by most recent transactions at the top (Date, descending order)
             var sortRange = masterTable.getDataBodyRange().getColumn(0).getUsedRange();
@@ -145,44 +137,25 @@
             },
             ]);
 
-            //Queue a command to add the new chart
-            var chartDataRangeColumn1 = masterTable.columns.getItemAt(0).getDataBodyRange();
-            var chartDataRangeColumn2 = masterTable.columns.getItemAt(1).getDataBodyRange();
-            // Comment about why we're doing this
-            var chartDataRange = chartDataRangeColumn1.getBoundingRect(chartDataRangeColumn2);
-            var chart = dataSheet.charts.add("Line", chartDataRange, Excel.ChartSeriesBy.auto);
-            chart.setPosition("B8", "G17");
-            chart.title.text = "Expense Trends";
-            chart.title.format.font.color = "#41AEBD";
-            chart.series.getItemAt(0).format.line.color = "#2E81AD";
-
             // Auto-fit columns and rows
             dataSheet.getUsedRange().getEntireColumn().format.autofitColumns();
             dataSheet.getUsedRange().getEntireRow().format.autofitRows();
-
 
             // Set the sheet as active
             dataSheet.activate();
 
             //Run the queued-up commands, and return a promise to indicate task completion
             return ctx.sync();
-        }).catch(function (error) {
-            // Always be sure to catch any accumulated errors that bubble up from the Excel.run execution
-            app.showNotification("Error: " + error);
-            console.log("Error: " + error);
-            if (error instanceof OfficeExtension.Error) {
-                console.log("Debug info: " + JSON.stringify(error.debugInfo));
-            }
-        });
+        }).catch(errorHandler);
 
     }
 
-    function getFormattedArray(purchases) {
+    function getFormattedArray(expenses) {
         var result = {};
         result.data = [];
         result.format = [];
 
-        $.each(purchases, function (i, item) {
+        $.each(expenses, function (i, item) {
             var date = new Date(item.txnDateField).toLocaleDateString();
             var type = "Unspecified";
             switch (item.paymentTypeField) {
@@ -214,12 +187,14 @@
             var amount = item.totalAmtField;
 
             result.data.push([date, amount, payee, cat, '=IF(OR((TEXT([DATE], "dddd") = "Saturday"), (TEXT([DATE], "dddd") = "Sunday")), "Weekend", "Weekday")', '=TEXT([DATE], "mmm - yyyy")']);
-            result.format.push([[null, '_($* #,##0.00_);_($* (#,##0.00);_($* "-"??_);_(@_)', null, null, null, null]]);
+            result.format.push([null, '_($* #,##0.00_);_($* (#,##0.00);_($* "-"??_);_(@_)', null, null, null, null]);
         });
 
         return result;
     }
 
+    // Helper function to add and format content in the workbook
+ 
     // Create the charitable donations tracker
     function createDonationsTracker() {
 
@@ -332,90 +307,25 @@
             // Run the queued-up commands, and return a promise to indicate task completion
             return ctx.sync();
         })
-			.catch(function (error) {
-			    // Always be sure to catch any accumulated errors that bubble up from the Excel.run execution
-			    app.showNotification("Error: " + error);
-			    console.log("Error: " + error);
-			    if (error instanceof OfficeExtension.Error) {
-			        console.log("Debug info: " + JSON.stringify(error.debugInfo));
-			    }
-			});
+			.catch(errorHandler);
     }
 
-    // Helper function to add and format content in the workbook
-    function addContentToWorksheet(sheetObject, rangeAddress, displayText, typeOfText, formulaContent, numberFormat) {
 
-        // Format differently by the type of content
-        switch (typeOfText) {
-            case "SheetTitle":
-                var range = sheetObject.getRange(rangeAddress);
-                range.values = displayText;
-                range.format.font.name = "Corbel";
-                range.format.font.size = 30;
-                range.format.font.color = "white";
-                range.merge();
-                //Fill color in the brand bar
-                sheetObject.getRange("A1:M1").format.fill.color = "#41AEBD";
-                break;
-            case "SheetHeading":
-                var range = sheetObject.getRange(rangeAddress);
-                range.values = displayText;
-                range.format.font.name = "Corbel";
-                range.format.font.size = 18;
-                range.format.font.color = "#00b3b3";
-                range.merge();
-                break;
-            case "SheetHeadingDesc":
-                var range = sheetObject.getRange(rangeAddress);
-                range.values = displayText;
-                range.format.font.name = "Corbel";
-                range.format.font.size = 10;
-                range.merge();
-                break;
-            case "SummaryDataHeader":
-                var range = sheetObject.getRange(rangeAddress);
-                range.values = displayText;
-                range.format.font.name = "Corbel";
-                range.format.font.size = 13;
-                range.merge();
-                break;
-            case "SummaryDataValue":
-                var range = sheetObject.getRange(rangeAddress);
-                range.numberFormat = numberFormat;
-                range.values = displayText;
-                range.format.font.name = "Corbel";
-                range.format.font.size = 13;
-                range.merge();
-                break;
-            case "TableHeading":
-                var range = sheetObject.getRange(rangeAddress);
-                range.values = displayText;
-                range.format.font.name = "Corbel";
-                range.format.font.size = 12;
-                range.format.font.color = "#00b3b3";
-                range.merge();
-                break;
-            case "TableHeaderRow":
-                var range = sheetObject.getRange(rangeAddress);
-                range.format.font.name = "Corbel";
-                range.format.font.size = 10;
-                range.format.font.bold = true;
-                range.format.font.color = "black";
-                break;
-            case "TableDataRows":
-                var range = sheetObject.getRange(rangeAddress);
-                range.format.font.name = "Corbel";
-                range.format.font.size = 10;
-                sheetObject.getRange(rangeAddress).format.borders.getItem('EdgeBottom').style = 'Continuous';
-                sheetObject.getRange(rangeAddress).format.borders.getItem('EdgeTop').style = 'Continuous';
-                break;
-            case "TableTotalsRow":
-                var range = sheetObject.getRange(rangeAddress);
-                range.format.font.name = "Corbel";
-                range.format.font.size = 10;
-                range.format.font.bold = true;
-                break;
+    // Helper function for treating errors
+    function errorHandler(error) {
+        // Always be sure to catch any accumulated errors that bubble up from the Excel.run execution
+        showNotification("Error", error);
+        console.log("Error: " + error);
+        if (error instanceof OfficeExtension.Error) {
+            console.log("Debug info: " + JSON.stringify(error.debugInfo));
         }
     }
 
+    // Helper function for displaying notifications
+    function showNotification(header, content) {
+        $("#notificationHeader").text(header);
+        $("#notificationBody").text(content);
+        messageBanner.showBanner();
+        messageBanner.toggleExpansion();
+    }
 })();

@@ -27,29 +27,53 @@
     <!-- link rel="stylesheet" href="/Content/fabric.components.min.css" -->
 </head>
 <body>
-    <div class="padding">
-        <div id="welcomePanel" class="ms-u-fadeIn200" style="padding: 50px">
-            <h1 class="first-run-title ms-font-l ms-fontWeight-light">Welcome!</h1>
-            <br />
-            <h1 class="first-run-title ms-font-l ms-fontWeight-light">This add-in connects Excel with your Quickbooks Online account, pleasse sign-in to get started.</h1>
-            <br />
-            <a id="btnSignIn" class="intuitPlatformConnectButton" style="cursor: pointer">Connect with QuickBooks</a>
-        </div>
+    <div id="content-main">
+        <div class="padding">
+            <div id="welcomePanel" class="ms-u-fadeIn200" style="padding: 50px">
+                <h1 class="first-run-title ms-font-l ms-fontWeight-light">Welcome!</h1>
+                <br />
+                <h1 class="first-run-title ms-font-l ms-fontWeight-light">This add-in connects Excel with your Quickbooks Online account, please sign-in to get started.</h1>
+                <br />
+                <a id="btnSignIn" class="intuitPlatformConnectButton" style="cursor: pointer">Connect with QuickBooks</a>
+            </div>
 
-        <div id="actionsPanel" class="ms-u-fadeIn200" style="display: none">
-            <h1 class="first-run-title ms-font-l ms-fontWeight-light">Please select an action below:</h1>
-            <br />
+            <div id="actionsPanel" class="ms-u-fadeIn200" style="display: none">
+                <h1 class="first-run-title ms-font-l ms-fontWeight-light">Please select an action below:</h1>
+                <br />
 
-            <button id="btnGetPurchases" class="ms-Button ms-Button--command"><span class="ms-font-xxl ms-Button-icon"><i class="ms-Icon ms-Icon--bag"></i></span><span class="ms-Button-label">Get Expenses</span></button><br />
-            <br />
-            <button id="btnGetAccounts" class="ms-Button ms-Button--command"><span class="ms-font-xxl ms-Button-icon"><i class="ms-Icon ms-Icon--people"></i></span><span class="ms-Button-label">Get Accounts</span></button><br />
-            <br />
-            <button id="btnCreateReport" class="ms-Button ms-Button--command"><span class="ms-font-xxl ms-Button-icon"><i class="ms-Icon ms-Icon--graph"></i></span><span class="ms-Button-label">Create Donations Tracker</span></button><br />
-            <br />
-            <div style="position: absolute; bottom: 50px;">
-                <button id="btnSignOut" class="ms-Button ms-Button--command"><span class="ms-font-xxl ms-Button-icon"><i class="ms-Icon ms-Icon--oofReply"></i></span><span class="ms-Button-label">Sign Out</span></button>
+                <button id="btnGetExpenses" class="ms-Button ms-Button--command"><span class="ms-font-xxl ms-Button-icon"><i class="ms-Icon ms-Icon--bag"></i></span><span class="ms-Button-label">Get Expenses</span></button><br />
+                <br />
+                <button id="btnGetAccounts" class="ms-Button ms-Button--command"><span class="ms-font-xxl ms-Button-icon"><i class="ms-Icon ms-Icon--people"></i></span><span class="ms-Button-label">Get Accounts</span></button><br />
+                <br />
+                <button id="btnCreateReport" class="ms-Button ms-Button--command"><span class="ms-font-xxl ms-Button-icon"><i class="ms-Icon ms-Icon--graph"></i></span><span class="ms-Button-label">Donations Tracker</span></button><br />
+                <br />
+                <div style="position: absolute; bottom: 50px;">
+                    <button id="btnSignOut" class="ms-Button ms-Button--command"><span class="ms-font-xxl ms-Button-icon"><i class="ms-Icon ms-Icon--oofReply"></i></span><span class="ms-Button-label">Sign Out</span></button>
+                </div>
             </div>
         </div>
+    </div>
+    <div class="footer">
+        <div class="ms-Grid ms-bgColor-themeSecondary">
+            <div class="ms-Grid-row">
+                <div class="ms-Grid-col ms-u-sm12 ms-u-md12 ms-u-lg12"> <div class="ms-font-xl ms-fontColor-white">Contoso</div></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FabricUI component used for displaying notifications -->
+    <div class="ms-MessageBanner" style="position:absolute;bottom: 0;">
+        <div class="ms-MessageBanner-content">
+            <div class="ms-MessageBanner-text">
+                <div class="ms-MessageBanner-clipper">
+                    <div class="ms-font-m-plus ms-fontWeight-semibold" id="notificationHeader"></div>
+                    <div class="ms-font-m ms-fontWeight-semilight" id="notificationBody"></div>
+                </div>
+            </div>
+            <button class="ms-MessageBanner-expand" style="display:none"><i class="ms-Icon ms-Icon--chevronsDown"></i> </button>
+            <div class="ms-MessageBanner-action"></div>
+        </div>
+        <button class="ms-MessageBanner-close"> <i class="ms-Icon ms-Icon--x"></i> </button>
     </div>
 </body>
 </html>

@@ -16,19 +16,12 @@ namespace QbAdd_inDotNetWeb
         {
             config.MapHttpAttributeRoutes();
 
-            /*config.Routes.MapHttpRoute(
-                name: "DefaultApi",
-                routeTemplate: "api/{controller}/{id}",
-                defaults: new { id = RouteParameter.Optional }
-            );*/
 
             config.Routes.MapHttpRoute(
                 name: "ActionApi",
                 routeTemplate: "api/{action}/{id}",
                 defaults: new { id = RouteParameter.Optional, controller = "QuickBooks"}
             );
-
-            //RouteTable.Routes.MapHttpRoute(name: "DefaultApi", routeTemplate: "api/{controller}/{id}", defaults: new { id = RouteParameter.Optional }).RouteHandler = new SessionStateRouteHandler();
 
         }
     }

@@ -14,11 +14,11 @@
 
   <!--Version. Updates from the store only get triggered if there is a version change. -->
   <Version>1.0.0.0</Version>
-  <ProviderName>[Provider name]</ProviderName>
+  <ProviderName>Rolando Jimenez</ProviderName>
   <DefaultLocale>en-US</DefaultLocale>
   <!-- The display name of your add-in. Used on the store and various places of the Office UI such as the add-ins dialog. -->
-  <DisplayName DefaultValue="QbAdd-inDotNet" />
-  <Description DefaultValue="QbAdd-inDotNet"/>
+  <DisplayName DefaultValue="QB Add-in .Net" />
+  <Description DefaultValue="Connect Excel with your QuickBooks Online account"/>
   <!-- Icon for your add-in. Used on installation screens and the add-ins dialog. -->
   <IconUrl DefaultValue="~remoteAppUrl/Images/Button32x32.png" />
 
@@ -109,11 +109,11 @@
 
           <ExtensionPoint xsi:type="ContextMenu">
             <OfficeMenu id="ContextMenuCell">
-              <Control xsi:type="Menu" id="TestMenu2">
-              <Label resid="Contoso.ContextMenu.Label" />
+              <Control xsi:type="Menu" id="addChartMenu">
+              <Label resid="Contoso.ContextMenu.MenuLabel" />
               <!--<Tooltip resid="residToolTip" />-->
               <Supertip>
-                <Title resid="Contoso.ContextMenu.Label" />
+                <Title resid="Contoso.ContextMenu.MenuLabel" />
                 <Description resid="Contoso.GetStarted.Description" />
               </Supertip>
                 <Icon>
@@ -122,11 +122,11 @@
                   <bt:Image size="80" resid="Contoso.tpicon_80x80" />
                 </Icon>
               <Items>
-                <Item id="showGallery2">
-                  <Label resid="Contoso.ContextMenu.Label"/>
+                <Item id="addChartItem">
+                  <Label resid="Contoso.ContextMenu.ItemLabel"/>
                   <Supertip>
-                    <Title resid="Contoso.ContextMenu.Label" />
-                    <Description resid="Contoso.TaskpaneButton.Tooltip" />
+                    <Title resid="Contoso.ContextMenu.ItemLabel" />
+                    <Description resid="Contoso.GetStarted.Description" />
                   </Supertip>
                   <Icon>
                     <bt:Image size="16" resid="Contoso.tpicon_16x16" />
@@ -134,14 +134,13 @@
                     <bt:Image size="80" resid="Contoso.tpicon_80x80" />
                   </Icon>
                   <Action xsi:type="ExecuteFunction">
-                    <FunctionName>addDonation</FunctionName>
+                    <FunctionName>addChart</FunctionName>
                   </Action>
                 </Item>
               </Items>
               </Control>
             </OfficeMenu>
-          </ExtensionPoint>
-          
+          </ExtensionPoint>     
         </DesktopFormFactor>
       </Host>
     </Hosts>
@@ -160,9 +159,10 @@
       </bt:Urls>
       <!-- ShortStrings max characters==125. -->
       <bt:ShortStrings>
-        <bt:String id="Contoso.TaskpaneButton.Label" DefaultValue="Show Taskpane" />
-        <bt:String id="Contoso.ContextMenu.Label" DefaultValue="Add Donation" />
-        <bt:String id="Contoso.Group1Label" DefaultValue="Commands Group" />
+        <bt:String id="Contoso.TaskpaneButton.Label" DefaultValue="Connect" />
+       <bt:String id="Contoso.ContextMenu.MenuLabel" DefaultValue="Insert QuickBooks Content" />
+       <bt:String id="Contoso.ContextMenu.ItemLabel" DefaultValue="Expenses Chart" />
+       <bt:String id="Contoso.Group1Label" DefaultValue="QuickBooks" />
         <bt:String id="Contoso.GetStarted.Title" DefaultValue="Get started with your sample add-in!" />
       </bt:ShortStrings>
       <!-- LongStrings max characters==250. -->

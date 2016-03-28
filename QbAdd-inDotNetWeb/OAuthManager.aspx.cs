@@ -14,22 +14,15 @@ namespace QbAdd_inDotNetWeb
 {
     public partial class OAuthManager : System.Web.UI.Page
     {
-        #region <<App Properties >>
         private string requestTokenUrl = ConfigurationManager.AppSettings["RequestTokenUrl"];
         private string accessTokenUrl = ConfigurationManager.AppSettings["AccessTokenUrl"];
         private string authorizeUrl = ConfigurationManager.AppSettings["AuthorizeUrl"];
         private string oauthUrl = ConfigurationManager.AppSettings["OauthLink"];
         private string consumerKey = ConfigurationManager.AppSettings["ConsumerKey"];
         private string consumerSecret = ConfigurationManager.AppSettings["ConsumerSecret"];
-        private string oauthCallbackUrl = "https://localhost:44300/OauthManager.aspx?";
-        private string GrantUrl = "https://localhost:44300/OauthManager.aspx?connect=true";
- 
-        #endregion
-        /// <summary>
-        /// Page Load with initialization of properties.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
+//        private string oauthCallbackUrl = "https://localhost:44300/OauthManager.aspx";
+        private string oauthCallbackUrl = "https://qbaddin.azurewebsites.net/OauthManager.aspx";
+
         protected void Page_Load(object sender, EventArgs e)
         {
             if (Request.QueryString.Count > 0)
@@ -46,23 +39,19 @@ namespace QbAdd_inDotNetWeb
             }
 
         }
-        /// <summary>
-        /// Initiate the ouath screen.
-        /// </summary>
+
         private void FireAuth()
         {
 
             IOAuthSession session = CreateSession();
             IToken requestToken = session.GetRequestToken();
             HttpContext.Current.Session["requestToken"] = requestToken;
-            var authUrl = string.Format("{0}?oauth_token={1}&oauth_callback={2}", authorizeUrl, requestToken.Token, UriUtility.UrlEncode(oauthCallbackUrl + "rt=" + requestToken.Token + "&rts=" + requestToken.TokenSecret));
+            var authUrl = string.Format("{0}?oauth_token={1}&oauth_callback={2}", authorizeUrl, requestToken.Token, UriUtility.UrlEncode(oauthCallbackUrl));
             HttpContext.Current.Session["oauthLink"] = authUrl;
 
             HttpContext.Current.Response.Redirect(authUrl);
         }
-        /// <summary>
-        /// Read the values from the query string.
-        /// </summary>
+
         private void ReadToken()
         {
             HttpContext.Current.Session["oauthToken"] = Request.QueryString["oauth_token"].ToString(); ;

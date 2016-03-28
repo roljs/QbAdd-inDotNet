@@ -146,6 +146,8 @@
   <ItemGroup>
     <Content Include="OAuthManager.aspx" />
     <Content Include="packages.config" />
+    <None Include="Properties\PublishProfiles\agave - Web Deploy.pubxml" />
+    <None Include="Properties\PublishProfiles\qbaddin - Web Deploy.pubxml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

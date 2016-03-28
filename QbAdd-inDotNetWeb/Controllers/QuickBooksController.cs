@@ -4,14 +4,13 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
+
 using System.Web;
 using System.Configuration;
-
 using Intuit.Ipp.Core;
 using Intuit.Ipp.Data;
 using Intuit.Ipp.DataService;
 using Intuit.Ipp.Security;
-using DevDefined.OAuth.Framework;
 
 
 namespace QbAdd_inDotNetWeb
@@ -19,16 +18,11 @@ namespace QbAdd_inDotNetWeb
    
     public class QuickBooksController : ApiController
     {
-        public class AccessToken
-        {
-            public string token;
-            public string secret;
-        }
 
         private String realmId, accessToken, accessTokenSecret, consumerKey, consumerSecret;
 
         [HttpGet]
-        public IEnumerable<Purchase> GetPurchases(int n)
+        public IEnumerable<Purchase> GetExpenses(int n)
         {
             consumerKey = ConfigurationManager.AppSettings["consumerKey"].ToString();
             consumerSecret = ConfigurationManager.AppSettings["consumerSecret"].ToString();
@@ -43,15 +37,15 @@ namespace QbAdd_inDotNetWeb
             context.IppConfiguration.BaseUrl.Qbo = ConfigurationManager.AppSettings["ServiceContext.BaseUrl.Qbo"].ToString();
 
             DataService dataService = new DataService(context);
-            List<Purchase> purchases = dataService.FindAll(new Purchase(), 1, n).ToList();
-            return purchases;
+            List<Purchase> expenses = dataService.FindAll(new Purchase(), 1, n).ToList();
+            return expenses;
         }
 
         [HttpGet]
-        public HttpResponseMessage SetToken(string t, string s)
+        public HttpResponseMessage SetToken(string token, string secret)
         {
-            HttpContext.Current.Session["accessToken"] = t;
-            HttpContext.Current.Session["accessTokenSecret"] = s;
+            HttpContext.Current.Session["accessToken"] = token;
+            HttpContext.Current.Session["accessTokenSecret"] = secret;
 
             return Request.CreateResponse(HttpStatusCode.OK, "Success");     
         }
@@ -60,7 +54,7 @@ namespace QbAdd_inDotNetWeb
         {
             HttpStatusCode code = HttpStatusCode.NotFound;
             string message = "NotFound";
-            if (null != HttpContext.Current.Session["accessToken"])
+            if (null != HttpContext.Current.Session["accessToken"] && "" != HttpContext.Current.Session["accessToken"].ToString())
             {
                 code = HttpStatusCode.OK;
                 message = "Success";
