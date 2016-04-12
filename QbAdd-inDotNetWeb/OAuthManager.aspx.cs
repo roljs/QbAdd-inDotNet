@@ -20,8 +20,8 @@ namespace QbAdd_inDotNetWeb
         private string oauthUrl = ConfigurationManager.AppSettings["OauthLink"];
         private string consumerKey = ConfigurationManager.AppSettings["ConsumerKey"];
         private string consumerSecret = ConfigurationManager.AppSettings["ConsumerSecret"];
-//        private string oauthCallbackUrl = "https://localhost:44300/OauthManager.aspx";
-        private string oauthCallbackUrl = "https://qbaddin.azurewebsites.net/OauthManager.aspx";
+        private string oauthCallbackUrl = "https://localhost:44300/OauthManager.aspx";
+        //private string oauthCallbackUrl = "https://qbaddin.azurewebsites.net/OauthManager.aspx";
 
         protected void Page_Load(object sender, EventArgs e)
         {

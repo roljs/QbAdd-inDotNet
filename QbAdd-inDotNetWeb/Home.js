@@ -14,8 +14,7 @@
             $('#btnSignOut').click(signOut);
 
             $('#btnGetExpenses').click(getExpenses);
-            //$('#btnGetAccounts').click(getAccounts);
-            $('#btnCreateReport').click(createDonationsTracker);
+            $('#btnCreateChart').click(addChart);
 
             $("#welcomePanel").show();
             $("#actionsPanel").hide();
@@ -30,10 +29,10 @@
 
     function signIn() {
         var signInUrl = "https://appcenter.intuit.com/Connect/SessionStart?datasources=quickbooks&grantUrl="
-            //+ encodeURIComponent("https://localhost:44300/OAuthManager.aspx?connect=true");
-            + encodeURIComponent("https://qbaddin.azurewebsites.net/OAuthManager.aspx?connect=true");
+            + encodeURIComponent("https://localhost:44300/OAuthManager.aspx?connect=true");
+            //+ encodeURIComponent("https://qbaddin.azurewebsites.net/OAuthManager.aspx?connect=true");
         Office.context.ui.displayDialogAsync(signInUrl,
-            { height: 40, width: 40},
+            { height: 70, width: 40},
             function (result) {
                 dlg = result.value;
                 dlg.addEventHandler("dialogMessageReceived", processMessage);
@@ -41,7 +40,13 @@
     }
 
     function processMessage(arg) {
-        dlg.close();
+
+        //Work around for Mac:
+        try {
+            dlg.close();
+            OSF.ClientHostController.closeDialog();
+        } catch (e) { }
+
         accessToken = JSON.parse(arg.message);
 
         $.get("/api/setToken?" + $.param(accessToken))
@@ -51,6 +56,8 @@
 
         $("#welcomePanel").hide();
         $("#actionsPanel").show();
+
+
     }
 
     function signOut() {
@@ -105,15 +112,15 @@
 
             // Queue a command to add a new table
             var startRowNumber = 2;
-            var masterTableAddress = 'Expenses!B' + startRowNumber + ':G' + (startRowNumber + tableBody.data.length).toString();
+            var masterTableAddress = 'Expenses!B' + startRowNumber + ':G' + (startRowNumber + tableBody.length).toString();
             var masterTable = ctx.workbook.tables.add(masterTableAddress, true);
             masterTable.name = "ExpensesTable";
 
             // Queue a command to get the newly added table
             masterTable.getHeaderRowRange().values = [["DATE", "AMOUNT", "MERCHANT", "CATEGORY", "TYPEOFDAY", "MONTH"]];
 
-            masterTable.getDataBodyRange().formulas = tableBody.data;
-            masterTable.getDataBodyRange().numberFormat = tableBody.format;
+            masterTable.getDataBodyRange().formulas = tableBody;
+            masterTable.columns.getItem("AMOUNT").getRange().numberFormat = '_($* #,##0.00_);_($* (#,##0.00);_($* "-"??_);_(@_)';
 
             // Format the table header and data rows
             range = dataSheet.getRange('Expenses!B' + startRowNumber + ':G' + startRowNumber);
@@ -151,12 +158,12 @@
     }
 
     function getFormattedArray(expenses) {
-        var result = {};
-        result.data = [];
-        result.format = [];
+        var result = [];
 
         $.each(expenses, function (i, item) {
-            var date = new Date(item.txnDateField).toLocaleDateString();
+            //var tmpDate = new Date(item.txnDateField);
+            //var date = tmpDate.getMonth()+1 + "/" + tmpDate.getDate() + "/" + tmpDate.getFullYear();
+            var date = item.txnDateField.substr(0, 10);
             var type = "Unspecified";
             switch (item.paymentTypeField) {
                 case 0:
@@ -186,130 +193,11 @@
             }
             var amount = item.totalAmtField;
 
-            result.data.push([date, amount, payee, cat, '=IF(OR((TEXT([DATE], "dddd") = "Saturday"), (TEXT([DATE], "dddd") = "Sunday")), "Weekend", "Weekday")', '=TEXT([DATE], "mmm - yyyy")']);
-            result.format.push([null, '_($* #,##0.00_);_($* (#,##0.00);_($* "-"??_);_(@_)', null, null, null, null]);
+            result.push([date, amount, payee, cat, '=IF(OR((TEXT([DATE], "dddd") = "Saturday"), (TEXT([DATE], "dddd") = "Sunday")), "Weekend", "Weekday")', '=TEXT([DATE], "mmm - yyyy")']);
         });
 
         return result;
     }
-
-    // Helper function to add and format content in the workbook
- 
-    // Create the charitable donations tracker
-    function createDonationsTracker() {
-
-        // Run a batch operation against the Excel object model
-        Excel.run(function (ctx) {
-
-            // Add a new worksheet to store the transactions
-            var donationsSheet = ctx.workbook.worksheets.add("Donations");
-
-            // Create strings to store all the static content to display in the Welcome sheet
-            var sheetTitle = "WoodGrove Bank";
-
-            var sheetHeading1 = "Donations Tracker";
-
-            var sheetDesc1 = "Track your charitable contributions throughout the year.";
-
-            var sheetDesc2 = "Use this data at the end of the year to report your tax deductions.";
-
-            var sheetHeading2 = "Summary";
-
-            var summaryDataHeader1 = "Total Donations";
-
-            var tableHeading1 = "Donations By Organization";
-
-            var tableHeading2 = "Donations By Month";
-
-            var tableHeading3 = "Transaction Details";
-
-            // Add all the intro content to the Welcome sheet and format the text
-            addContentToWorksheet(donationsSheet, "B1:G1", sheetTitle, "SheetTitle", "", "");
-
-            addContentToWorksheet(donationsSheet, "B3:C3", sheetHeading1, "SheetHeading", "", "");
-
-            addContentToWorksheet(donationsSheet, "C4:G4", sheetDesc1, "SheetHeadingDesc", "", "");
-
-            addContentToWorksheet(donationsSheet, "C5:J5", sheetDesc2, "SheetHeadingDesc", "", "");
-
-            addContentToWorksheet(donationsSheet, "B7:B7", sheetHeading2, "SheetHeading", "", "");
-
-            addContentToWorksheet(donationsSheet, "B9:C9", summaryDataHeader1, "SummaryDataHeader", "", "");
-
-            addContentToWorksheet(donationsSheet, "B11:D11", tableHeading1, "TableHeading", "", "");
-
-            addContentToWorksheet(donationsSheet, "E11:F11", tableHeading2, "TableHeading", "", "");
-
-            addContentToWorksheet(donationsSheet, "H11:K11", tableHeading3, "TableHeading", "", "");
-
-            //Fill white color in the sheet for improved look
-            donationsSheet.getRange("A2:L250").format.fill.color = "white";
-
-            // Queue a command to add the Transaction Details table
-            var donationsTable = ctx.workbook.tables.add('Donations!H12:K12', true);
-            donationsTable.name = "DonationsTable";
-
-            // Queue a command to get the newly added table
-            donationsTable.getHeaderRowRange().values = [["DATE", "AMOUNT", "ORGANIZATION", "MONTH"]];
-
-            // Queue a command to add the Summary Donations by Organization table
-            var donationsByOrgTable = ctx.workbook.tables.add('Donations!B12:C12', true);
-            donationsByOrgTable.name = "DonationsByOrgTable";
-
-            // Queue a command to get the newly added table
-            donationsByOrgTable.getHeaderRowRange().values = [["ORGANIZATION", "AMOUNT"]];
-            donationsByOrgTable.showTotals = true;
-            donationsByOrgTable.getTotalRowRange().getLastCell().values = [["=SUM([AMOUNT]"]];
-
-            // Queue a command to add the Summary Donations by Month table
-            var donationsByMonthTable = ctx.workbook.tables.add('Donations!E12:F12', true);
-            donationsByMonthTable.name = "DonationsByMonthTable";
-
-            // Queue a command to get the newly added table
-            donationsByMonthTable.getHeaderRowRange().values = [["MONTH", "AMOUNT"]];
-            donationsByMonthTable.showTotals = true;
-            donationsByMonthTable.getTotalRowRange().getLastCell().values = [["=SUM([AMOUNT]"]];
-
-            addContentToWorksheet(donationsSheet, "B12:C12", "", "TableHeaderRow", "", "");
-
-            addContentToWorksheet(donationsSheet, "B13:C250", "", "TableDataRows", "", "");
-
-            addContentToWorksheet(donationsSheet, "E12:F12", "", "TableHeaderRow", "", "");
-
-            addContentToWorksheet(donationsSheet, "E13:F250", "", "TableDataRows", "", "");
-
-            addContentToWorksheet(donationsSheet, "H12:K12", "", "TableHeaderRow", "", "");
-
-            addContentToWorksheet(donationsSheet, "G13:J250", "", "TableDataRows", "", "");
-
-            // Set the number format for Date and Currency columns
-            donationsSheet.getRange("C13:C200").numberFormat = "$#";
-            donationsSheet.getRange("F13:F200").numberFormat = "$#";
-            donationsSheet.getRange("I13:I200").numberFormat = "$#";
-            donationsSheet.getRange("E13:E200").numberFormat = "@";
-            donationsSheet.getRange("K13:K200").numberFormat = "mmm-yyyy";
-            donationsSheet.getRange("H13:H200").numberFormat = "mm/dd/yyyy";
-            donationsByOrgTable.getTotalRowRange().getLastCell().numberFormat = "$#";
-            donationsByMonthTable.getTotalRowRange().getLastCell().numberFormat = "$#";
-
-            // Set the value of Total Donations at the top
-            var rangetotalDonated = donationsSheet.getRange("D9");
-            rangetotalDonated.formulas = [["=SUM(DonationsTable[AMOUNT])"]];
-            rangetotalDonated.format.font.name = "Corbel";
-            rangetotalDonated.format.font.size = 18;
-            rangetotalDonated.numberFormat = "$#";
-            rangetotalDonated.merge();
-
-            // Auto-fit columns and rows
-            donationsSheet.getUsedRange().getEntireColumn().format.autofitColumns();
-            donationsSheet.getUsedRange().getEntireRow().format.autofitRows();
-
-            // Run the queued-up commands, and return a promise to indicate task completion
-            return ctx.sync();
-        })
-			.catch(errorHandler);
-    }
-
 
     // Helper function for treating errors
     function errorHandler(error) {

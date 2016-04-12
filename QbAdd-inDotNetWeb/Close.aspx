@@ -5,7 +5,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head runat="server">
     <title>Close</title>
-    <script src="//appsforoffice.microsoft.com/lib/beta/hosted/office.js" type="text/javascript"></script>
+    <script src="//appsforoffice.microsoft.com/lib/beta/hosted/office.debug.js" type="text/javascript"></script>
     <script src="//ajax.aspnetcdn.com/ajax/jQuery/jquery-1.9.1.min.js" type="text/javascript"></script>
 
     <script>
@@ -13,6 +13,7 @@
             var message = {};
             message.token = "<%=HttpContext.Current.Session["accessToken"].ToString()%>";
             message.secret = "<%=HttpContext.Current.Session["accessTokenSecret"].ToString()%>";
+            message.realm = "<%=HttpContext.Current.Session["realm"].ToString()%>";
             Office.context.ui.messageParent(JSON.stringify(message));
         }
 
@@ -20,7 +21,6 @@
 </head>
 <body>
     <form id="form1" runat="server">
-
     </form>
 </body>
 </html>

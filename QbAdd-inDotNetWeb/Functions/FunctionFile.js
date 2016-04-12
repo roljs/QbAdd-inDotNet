@@ -1,12 +1,4 @@
-﻿// The initialize function must be run each time a new page is loaded.
-(function () {
-    Office.initialize = function (reason) {
-        // If you need to initialize something you can do so here.
-    };
-
-})();
-
-function addChart(event) {
+﻿function addChart(event) {
 
     // Run a batch operation against the Excel object model
     Excel.run(function (ctx) {

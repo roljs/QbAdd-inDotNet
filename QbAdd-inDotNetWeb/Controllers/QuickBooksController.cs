@@ -27,7 +27,7 @@ namespace QbAdd_inDotNetWeb
             consumerKey = ConfigurationManager.AppSettings["consumerKey"].ToString();
             consumerSecret = ConfigurationManager.AppSettings["consumerSecret"].ToString();
 
-            realmId = ConfigurationManager.AppSettings["RealmId"].ToString();
+            realmId = HttpContext.Current.Session["realm"].ToString();
             accessToken = HttpContext.Current.Session["accessToken"].ToString();
             accessTokenSecret = HttpContext.Current.Session["accessTokenSecret"].ToString();
 
@@ -42,10 +42,11 @@ namespace QbAdd_inDotNetWeb
         }
 
         [HttpGet]
-        public HttpResponseMessage SetToken(string token, string secret)
+        public HttpResponseMessage SetToken(string token, string secret, string realm)
         {
             HttpContext.Current.Session["accessToken"] = token;
             HttpContext.Current.Session["accessTokenSecret"] = secret;
+            HttpContext.Current.Session["realm"] = realm;
 
             return Request.CreateResponse(HttpStatusCode.OK, "Success");     
         }
